@@ -256,3 +256,73 @@ def upload_image(data: ImageUpload):
         "report":response.json().get("report"),
         "image_id": str(result.inserted_id)
     }
+
+@app.post("/upload-image2")
+def upload_image2(data: ImageUpload):
+    # 1️⃣ Validate base64
+    try:
+        if "base64," in data.image_base64:
+            data.image_base64 = data.image_base64.split("base64,")[1]
+
+        image_bytes = base64.b64decode(data.image_base64)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid base64 image")
+
+    # 2️⃣ Save image temporarily
+    temp_filename = f"temp_{uuid.uuid4().hex}.jpg"
+    temp_dir = "temp_images"
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_path = os.path.join(temp_dir, temp_filename)
+
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    image.save(temp_path)
+    payload = {
+        "image_base64": data.image_base64,
+        "prediction": "glioma"
+    }
+
+    # response = requests.post(
+    #     "http://127.0.0.1:5000/generate-report",
+    #     json=payload
+    # )
+
+
+
+    # 3️⃣ Run tumor prediction
+    try:
+        prediction = tumor_model.predict(temp_path)
+        print("Step 1: Making prediction...")
+        predicted_class, confidence, original_image = predict_and_display(temp_path)
+        
+        # Step 2: Generate LIME explanation
+        print("\\nStep 2: Generating LIME explanation...")
+        explanation, image_np = explain_with_lime(temp_path)
+        
+        # Step 3: Display LIME explanation
+        print("\\nStep 3: Displaying LIME explanation...")
+        base_image=display_lime_explanation(explanation, image_np, predicted_class, class_names)
+        print(base_image)
+    except Exception as e:
+        os.remove(temp_path)
+        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
+
+    # 4️⃣ Delete temp image
+    os.remove(temp_path)
+
+    # 5️⃣ Save to MongoDB
+    doc = {
+        "image_base64": data.image_base64,
+        "prediction": prediction,
+        "xai_imagebase64":base_image,
+        "report":"hello",
+        "created_at": datetime.utcnow()
+    }
+    result = analysis_collection.insert_one(doc)
+
+    return {
+        "message": "Image uploaded & analyzed successfully",
+        "prediction": prediction,
+        "xai_imagebase64":base_image,
+        "report":"hi",
+        "image_id": str(result.inserted_id)
+    }
