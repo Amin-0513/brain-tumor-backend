@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+requests
+pymongo
+python-jose[cryptography]
+passlib[bcrypt]
+pillow
+numpy
+scikit-image
+scikit-learn
+lime
+matplotlib
+pydantic
+python-multipart
+torch
+torchvision
+opencv-python
