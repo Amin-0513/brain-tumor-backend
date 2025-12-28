@@ -23,7 +23,7 @@ python -m venv .venv
 # activate python environment
 .venv\Scripts\activate
 
-pip uninstall -y jose;
+pip uninstall -y jose
 pip install 'python-jose[cryptography]'
 pip install 'pydantic[email]'
 
