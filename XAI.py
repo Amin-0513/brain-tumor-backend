@@ -18,7 +18,7 @@ print(f"Using device: {device}")
 
 # Load the saved model
 model = BrainTumorCNN().to(device)
-model.load_state_dict(torch.load(r"E:\Brain tumor Detection\models\brain_tumor_cnn_model.pth", map_location=device))
+model.load_state_dict(torch.load('models/brain_tumor_cnn_model.pth", map_location=device))
 model.eval()
 print("Model loaded successfully!")
 
