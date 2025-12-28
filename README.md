@@ -24,7 +24,8 @@ python -m venv .venv
 .venv\Scripts\activate
 
 pip uninstall -y jose;
-pip install 'python-jose[cryptography]';
+pip install 'python-jose[cryptography]'
+pip install 'pydantic[email]'
 
 uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
